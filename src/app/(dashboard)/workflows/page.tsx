@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { GitBranch, Zap, ChevronDown } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 import { type Workflow, type WorkflowNode } from "@/lib/workflows";
 
 /* ── colour helpers ─────────────────────────────────────────── */
@@ -279,17 +280,7 @@ export default function WorkflowsPage() {
   return (
     <div className="space-y-6 animate-fade-in-up">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-1">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500/10 to-blue-500/10 border border-gray-200/80 dark:border-white/[0.06]">
-            <GitBranch className="w-5 h-5 text-violet-400" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">Workflows</h1>
-            <p className="text-sm text-gray-500 dark:text-white/30 mt-0.5">Automation pipelines powering Navi</p>
-          </div>
-        </div>
-      </div>
+      <PageHeader icon={GitBranch} title="Workflows" description="Automation pipelines powering Navi" />
 
       {/* Workflow list */}
       <div className="space-y-3">

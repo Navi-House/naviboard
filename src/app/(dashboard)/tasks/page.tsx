@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Plus, X, CheckSquare, Sparkles, Rocket, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 
 interface Task {
   id: number;
@@ -198,15 +199,7 @@ export default function TasksPage() {
 
   return (
     <div>
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl font-semibold flex items-center gap-3 tracking-tight">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500/10 to-blue-500/10 border border-gray-200/80 dark:border-white/[0.06]">
-            <CheckSquare className="w-5 h-5 text-violet-400" />
-          </div>
-          Tasks
-        </h1>
-        <p className="text-sm text-gray-600 dark:text-white/30 mt-1 ml-12">Kanban board</p>
-      </div>
+      <PageHeader icon={CheckSquare} title="Tasks" description="Kanban board" />
 
       {/* Filter bar */}
       <div className="mb-4">

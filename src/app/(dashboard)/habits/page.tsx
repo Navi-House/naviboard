@@ -4,6 +4,8 @@ import {
   Target, Plus, X, Trash2, Archive, ChevronLeft, ChevronRight,
   Flame, TrendingUp, Calendar, Settings2
 } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
+import { StatCard } from "@/components/stat-card";
 
 interface Habit {
   id: number; name: string; icon: string; color: string;
@@ -170,53 +172,30 @@ export default function HabitsPage() {
 
   return (
     <div className="animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/5 border border-amber-500/10">
-              <Target className="w-5 h-5 text-amber-400" />
-            </div>
-            Habits
-          </h1>
-          <p className="text-gray-600 dark:text-white/30 text-sm mt-1">Build consistency, track your streaks</p>
-        </div>
-        <button onClick={() => { resetForm(); setShowAdd(true); }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white text-sm font-medium transition-all duration-300 shadow-lg shadow-violet-500/20">
-          <Plus className="w-4 h-4" /> New Habit
-        </button>
-      </div>
+      <PageHeader
+        icon={Target}
+        iconColor="text-amber-400"
+        iconGradient="from-amber-500/20 to-amber-600/5"
+        title="Habits"
+        description="Build consistency, track your streaks"
+        actions={
+          <button onClick={() => { resetForm(); setShowAdd(true); }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white text-sm font-medium transition-all duration-300 shadow-lg shadow-violet-500/20">
+            <Plus className="w-4 h-4" /> New Habit
+          </button>
+        }
+      />
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="glass-card rounded-2xl p-4 border border-gray-200/80 dark:border-white/[0.06]">
-          <div className="flex items-center gap-2 mb-1">
-            <Calendar className="w-3.5 h-3.5 text-violet-400" />
-            <span className="text-[10px] text-gray-600 dark:text-white/30 uppercase tracking-wider">Today</span>
-          </div>
-          <div className="text-2xl font-bold">{todayCompleted}<span className="text-sm text-gray-500 dark:text-white/20">/{totalActive}</span></div>
-        </div>
-        <div className="glass-card rounded-2xl p-4 border border-gray-200/80 dark:border-white/[0.06]">
-          <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-[10px] text-gray-600 dark:text-white/30 uppercase tracking-wider">Completion</span>
-          </div>
-          <div className="text-2xl font-bold">{totalActive > 0 ? Math.round((todayCompleted / totalActive) * 100) : 0}<span className="text-sm text-gray-500 dark:text-white/20">%</span></div>
-        </div>
-        <div className="glass-card rounded-2xl p-4 border border-gray-200/80 dark:border-white/[0.06]">
-          <div className="flex items-center gap-2 mb-1">
-            <Flame className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-[10px] text-gray-600 dark:text-white/30 uppercase tracking-wider">Best Streak</span>
-          </div>
-          <div className="text-2xl font-bold">{bestStreak}<span className="text-sm text-gray-500 dark:text-white/20"> days</span></div>
-        </div>
-        <div className="glass-card rounded-2xl p-4 border border-gray-200/80 dark:border-white/[0.06]">
-          <div className="flex items-center gap-2 mb-1">
-            <Target className="w-3.5 h-3.5 text-blue-400" />
-            <span className="text-[10px] text-gray-600 dark:text-white/30 uppercase tracking-wider">Active</span>
-          </div>
-          <div className="text-2xl font-bold">{totalActive}<span className="text-sm text-gray-500 dark:text-white/20"> habits</span></div>
-        </div>
+        <StatCard icon={Calendar} label="Today" value={`${todayCompleted}/${totalActive}`}
+          iconColor="text-violet-400" iconGradient="from-violet-500/20 to-violet-600/5" delay={0} />
+        <StatCard icon={TrendingUp} label="Completion" value={`${totalActive > 0 ? Math.round((todayCompleted / totalActive) * 100) : 0}%`}
+          iconColor="text-emerald-400" iconGradient="from-emerald-500/20 to-emerald-600/5" delay={80} />
+        <StatCard icon={Flame} label="Best Streak" value={bestStreak} suffix="days"
+          iconColor="text-amber-400" iconGradient="from-amber-500/20 to-amber-600/5" delay={160} />
+        <StatCard icon={Target} label="Active" value={totalActive} suffix="habits"
+          iconColor="text-blue-400" iconGradient="from-blue-500/20 to-blue-600/5" delay={240} />
       </div>
 
       {/* Week Navigation */}

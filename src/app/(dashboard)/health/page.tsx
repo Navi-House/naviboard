@@ -4,6 +4,7 @@ import {
   Heart, Plus, X, Utensils, Dumbbell, Moon, Timer, Droplets,
   TrendingUp, Flame, Footprints, Brain, Trash2, ChevronLeft, ChevronRight
 } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 
 interface HealthEntry {
   id: number; type: string; date: string; time: string;
@@ -111,22 +112,19 @@ export default function HealthPage() {
 
   return (
     <div className="animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-rose-500/20 to-rose-600/5 border border-rose-500/10">
-              <Heart className="w-5 h-5 text-rose-400" />
-            </div>
-            Health
-          </h1>
-          <p className="text-gray-600 dark:text-white/30 text-sm mt-1">Track your diet, workouts, sleep, and fasting</p>
-        </div>
-        <button onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white text-sm font-medium transition-all duration-300 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30">
-          <Plus className="w-4 h-4" /> Log Entry
-        </button>
-      </div>
+      <PageHeader
+        icon={Heart}
+        iconColor="text-rose-400"
+        iconGradient="from-rose-500/20 to-rose-600/5"
+        title="Health"
+        description="Track your diet, workouts, sleep, and fasting"
+        actions={
+          <button onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white text-sm font-medium transition-all duration-300 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30">
+            <Plus className="w-4 h-4" /> Log Entry
+          </button>
+        }
+      />
 
       {/* Date Navigator */}
       <div className="flex items-center justify-center gap-4 mb-8">

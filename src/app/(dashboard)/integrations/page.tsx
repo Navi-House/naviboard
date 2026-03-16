@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { Link2, RefreshCw, Mail, Book, Building, Github, Cpu, Linkedin, Check } from "lucide-react";
+import { Link2, Mail, Book, Building, Github, Cpu, Linkedin, Check } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 
 interface Integration { name: string; icon: string; status: string; detail?: string; }
 
@@ -39,38 +40,25 @@ export default function IntegrationsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold flex items-center gap-3 tracking-tight">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500/10 to-blue-500/10 border border-gray-200/80 dark:border-white/[0.06]">
-              <Link2 className="w-5 h-5 text-violet-400" />
-            </div>
-            Integrations
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-white/30 mt-1 ml-12">Connected services</p>
-        </div>
-        <button onClick={load} className="p-2.5 rounded-xl hover:bg-gray-100 dark:bg-white/[0.05] text-gray-600 dark:text-white/30 hover:text-gray-500 dark:text-white/60 transition-all duration-200">
-          <RefreshCw className="w-4 h-4" />
-        </button>
-      </div>
+      <PageHeader icon={Link2} title="Integrations" description="Connected services" onRefresh={load} />
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1,2,3].map(i => <div key={i} className="glass-card h-36 animate-shimmer" />)}
+          {Array.from({ length: 3 }).map((_, i) => <div key={i} className="glass-card rounded-2xl h-36 animate-shimmer" />)}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {integrations.map((intg, i) => {
             const Icon = ICONS[intg.icon] || Link2;
             const gradient = BRAND_GRADIENTS[intg.icon] || "from-white/5 to-white/5";
-            const iconColor = BRAND_ICON_COLORS[intg.icon] || "text-gray-600 dark:text-white/50";
+            const iconColor = BRAND_ICON_COLORS[intg.icon] || "text-muted-foreground";
             const connected = intg.status === "connected";
 
             return (
-              <div key={i} className="glass-card p-6 transition-all duration-300 hover:border-gray-300 dark:border-white/[0.1] hover:-translate-y-0.5 group animate-fade-in-up"
+              <div key={i} className="glass-card rounded-xl p-6 transition-all duration-300 hover:border-gray-300 dark:hover:border-white/[0.1] hover:-translate-y-0.5 group animate-fade-in-up"
                 style={{ animationDelay: `${i * 60}ms` }}>
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${gradient} border border-gray-200/80 dark:border-white/[0.06] transition-all duration-300 group-hover:scale-105`}>
+                  <div className={`p-3 rounded-xl bg-gradient-to-br ${gradient} border border-border transition-all duration-300 group-hover:scale-105`}>
                     <Icon className={`w-6 h-6 ${iconColor}`} />
                   </div>
                   {connected ? (
@@ -79,14 +67,14 @@ export default function IntegrationsPage() {
                       <span className="text-[10px] text-emerald-400/80 font-medium">Connected</span>
                     </div>
                   ) : (
-                    <span className="text-[10px] px-2.5 py-1 rounded-lg bg-gray-50 dark:bg-white/[0.03] text-gray-600 dark:text-white/25 border border-gray-200 dark:border-white/[0.04]">
+                    <span className="text-[10px] px-2.5 py-1 rounded-lg bg-secondary text-muted-foreground/50 border border-border/50">
                       {intg.status.replace("_", " ")}
                     </span>
                   )}
                 </div>
-                <div className="text-sm font-medium text-gray-800 dark:text-white/85 mb-1">{intg.name}</div>
+                <div className="text-sm font-medium mb-1">{intg.name}</div>
                 {intg.detail && (
-                  <div className="text-[11px] text-gray-600 dark:text-white/25 font-mono truncate opacity-0 group-hover:opacity-100 transition-opacity duration-300">{intg.detail}</div>
+                  <div className="text-[11px] text-muted-foreground/50 font-mono truncate opacity-0 group-hover:opacity-100 transition-opacity duration-300">{intg.detail}</div>
                 )}
               </div>
             );

@@ -6,6 +6,7 @@ import {
   BookOpen, ChevronLeft, ChevronRight, Save, Eye, Edit3,
   Search, X, Calendar, Hash, Sparkles
 } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 
 interface JournalEntry {
   id?: number; date: string; content?: string; preview?: string;
@@ -163,30 +164,27 @@ export default function JournalPage() {
 
   return (
     <div className="animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500/20 to-indigo-600/5 border border-indigo-500/10">
-              <BookOpen className="w-5 h-5 text-indigo-400" />
-            </div>
-            Journal
-          </h1>
-          <p className="text-gray-600 dark:text-white/30 text-sm mt-1">Daily reflections and thoughts</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {streak > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card border border-amber-500/10">
-              <span className="text-amber-400 text-sm">🔥</span>
-              <span className="text-xs font-medium text-amber-400">{streak} day streak</span>
-            </div>
-          )}
-          <button onClick={() => setShowHistory(!showHistory)}
-            className="p-2.5 rounded-xl glass-card hover:bg-gray-100 dark:bg-white/[0.06] transition-colors" title="History">
-            <Calendar className="w-4 h-4 text-gray-600 dark:text-white/40" />
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        icon={BookOpen}
+        iconColor="text-indigo-400"
+        iconGradient="from-indigo-500/20 to-indigo-600/5"
+        title="Journal"
+        description="Daily reflections and thoughts"
+        actions={
+          <div className="flex items-center gap-3">
+            {streak > 0 && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card border border-amber-500/10">
+                <span className="text-amber-400 text-sm">🔥</span>
+                <span className="text-xs font-medium text-amber-400">{streak} day streak</span>
+              </div>
+            )}
+            <button onClick={() => setShowHistory(!showHistory)}
+              className="p-2.5 rounded-xl glass-card hover:bg-accent transition-colors" title="History">
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+        }
+      />
 
       <div className="flex gap-6">
         {/* Main Editor */}
