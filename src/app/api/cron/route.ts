@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { run } from "@/lib/exec";
+import { existsSync, readFileSync } from "fs";
 
 interface CronJob {
   id: string;
@@ -14,7 +15,19 @@ interface CronJob {
 }
 
 function parseOpenClawJobs(): CronJob[] {
-  const out = run('openclaw cron list --json 2>/dev/null || echo "{\\"jobs\\":[]}"');
+  // Prefer reading the cron store directly (works even if CLI env is missing)
+  let out = "";
+  const storePath = "/home/ubuntu/.openclaw/cron/jobs.json";
+  try {
+    if (existsSync(storePath)) {
+      out = readFileSync(storePath, "utf-8");
+    } else {
+      out = run('openclaw cron list --json 2>/dev/null || echo "{\\"jobs\\":[]}"');
+    }
+  } catch {
+    out = run('openclaw cron list --json 2>/dev/null || echo "{\\"jobs\\":[]}"');
+  }
+
   try {
     const data = JSON.parse(out);
     const jobs = data.jobs || data || [];
