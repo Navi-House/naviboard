@@ -1,7 +1,12 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { BarChart3, RefreshCw, Coins, Cpu, Zap, Hash, TrendingUp } from "lucide-react";
+import { BarChart3, Coins, Cpu, Zap, Hash, TrendingUp } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, PieChart, Pie } from "recharts";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
+import { StatCard } from "@/components/stat-card";
+import { StatSkeleton } from "@/components/loading-skeleton";
+import { DataTable, type Column } from "@/components/data-table";
 
 interface ModelStats {
   provider: string; model: string; requests: number;
@@ -41,6 +46,18 @@ function formatCost(n: number): string {
   return "$" + n.toFixed(2);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const chartTooltipStyle: any = {
+  contentStyle: {
+    background: "rgba(15,15,20,0.9)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: 12,
+    fontSize: 12,
+    backdropFilter: "blur(12px)",
+  },
+  labelStyle: { color: "#999" },
+};
+
 export default function UsagePage() {
   const [data, setData] = useState<UsageData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,88 +77,109 @@ export default function UsagePage() {
   })) || [];
 
   const dailyChartData = data?.daily.map(d => ({
-    date: d.date.slice(5), // MM-DD
+    date: d.date.slice(5),
     requests: d.requests,
     tokens: d.totalTokens,
     cost: d.totalCost,
   })) || [];
 
+  const rangeActions = (
+    <div className="flex items-center gap-2">
+      {[7, 30, 90].map(r => (
+        <button key={r} onClick={() => setRange(r)}
+          className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-300 ${
+            range === r
+              ? "bg-gradient-to-r from-violet-500/20 to-blue-500/20 text-foreground border border-violet-500/20"
+              : "glass-card text-muted-foreground hover:text-foreground/70"
+          }`}>{r}d</button>
+      ))}
+    </div>
+  );
+
+  const modelColumns: Column<ModelStats>[] = [
+    {
+      key: "provider", label: "Provider", sortable: true,
+      render: (m, i) => (
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PROVIDER_COLORS[m.provider] || CHART_COLORS[i % CHART_COLORS.length] }} />
+          <span className="text-xs text-muted-foreground capitalize">{m.provider}</span>
+        </div>
+      ),
+    },
+    {
+      key: "model", label: "Model", sortable: true,
+      render: (m) => <span className="font-mono text-xs font-medium">{m.model}</span>,
+    },
+    {
+      key: "requests", label: "Requests", align: "right" as const, sortable: true,
+      render: (m) => <span className="font-mono">{m.requests.toLocaleString()}</span>,
+    },
+    {
+      key: "inputTokens", label: "Input", align: "right" as const, sortable: true,
+      render: (m) => <span className="font-mono text-muted-foreground">{formatTokens(m.inputTokens)}</span>,
+    },
+    {
+      key: "outputTokens", label: "Output", align: "right" as const, sortable: true,
+      render: (m) => <span className="font-mono text-muted-foreground">{formatTokens(m.outputTokens)}</span>,
+    },
+    {
+      key: "cacheReadTokens", label: "Cache R/W", align: "right" as const,
+      render: (m) => <span className="font-mono text-muted-foreground/60 text-xs">{formatTokens(m.cacheReadTokens)} / {formatTokens(m.cacheWriteTokens)}</span>,
+    },
+    {
+      key: "totalTokens", label: "Total", align: "right" as const, sortable: true,
+      render: (m) => <span className="font-mono font-medium">{formatTokens(m.totalTokens)}</span>,
+    },
+    {
+      key: "totalCost", label: "Cost", align: "right" as const, sortable: true,
+      render: (m) => (
+        <span className={`font-mono font-medium ${m.totalCost > 0 ? "text-emerald-500" : "text-muted-foreground/60"}`}>
+          {formatCost(m.totalCost)}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div className="animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/5 border border-blue-500/10">
-              <BarChart3 className="w-5 h-5 text-blue-400" />
-            </div>
-            LLM Usage
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-white/30 mt-1">Token consumption and model activity</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {[7, 30, 90].map(r => (
-            <button key={r} onClick={() => setRange(r)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-300 ${
-                range === r
-                  ? "bg-gradient-to-r from-violet-500/20 to-blue-500/20 text-gray-900 dark:text-white border border-violet-500/20"
-                  : "glass-card text-gray-600 dark:text-white/40 hover:text-gray-900 dark:hover:text-white/70"
-              }`}>{r}d</button>
-          ))}
-          <button onClick={load} className="p-2.5 rounded-xl glass-card hover:bg-gray-100 dark:hover:bg-white/[0.05] text-gray-600 dark:text-white/30 transition-all duration-200">
-            <RefreshCw className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        icon={BarChart3}
+        iconColor="text-blue-400"
+        iconGradient="from-blue-500/20 to-blue-600/5"
+        title="LLM Usage"
+        description="Token consumption and model activity"
+        onRefresh={load}
+        actions={rangeActions}
+      />
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => <div key={i} className="glass-card rounded-2xl h-28 shimmer" />)}
-        </div>
+        <StatSkeleton count={4} />
       ) : !data || data.summary.totalRequests === 0 ? (
-        <div className="glass-card rounded-2xl p-12 text-center border border-gray-200/80 dark:border-white/[0.06]">
-          <BarChart3 className="w-10 h-10 text-gray-300 dark:text-white/10 mx-auto mb-3" />
-          <p className="text-gray-600 dark:text-white/40 text-sm">No usage data for this period</p>
-        </div>
+        <EmptyState icon={BarChart3} title="No usage data for this period" />
       ) : (
         <>
           {/* Summary Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {[
-              { icon: Hash, label: "Total Requests", value: data.summary.totalRequests.toLocaleString(), color: "from-violet-500/20 to-violet-600/5", accent: "text-violet-400" },
-              { icon: Zap, label: "Total Tokens", value: formatTokens(data.summary.totalTokens), color: "from-blue-500/20 to-blue-600/5", accent: "text-blue-400" },
-              { icon: Coins, label: "Total Cost", value: formatCost(data.summary.totalCost), color: "from-emerald-500/20 to-emerald-600/5", accent: "text-emerald-400" },
-              { icon: Cpu, label: "Models Used", value: data.summary.modelCount.toString(), color: "from-amber-500/20 to-amber-600/5", accent: "text-amber-400" },
-            ].map((stat, i) => (
-              <div key={i} className="glass-card rounded-2xl p-5 border border-gray-200/80 dark:border-white/[0.06] transition-all duration-300 hover:border-gray-300 dark:hover:border-white/[0.1]"
-                style={{ animationDelay: `${i * 80}ms` }}>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] text-gray-600 dark:text-white/25 uppercase tracking-widest font-medium">{stat.label}</span>
-                  <div className={`p-1.5 rounded-lg bg-gradient-to-br ${stat.color}`}>
-                    <stat.icon className={`w-3.5 h-3.5 ${stat.accent}`} />
-                  </div>
-                </div>
-                <div className="text-2xl font-bold tracking-tight">{stat.value}</div>
-              </div>
-            ))}
+            <StatCard icon={Hash} label="Total Requests" value={data.summary.totalRequests.toLocaleString()}
+              iconColor="text-violet-400" iconGradient="from-violet-500/20 to-violet-600/5" delay={0} />
+            <StatCard icon={Zap} label="Total Tokens" value={formatTokens(data.summary.totalTokens)}
+              iconColor="text-blue-400" iconGradient="from-blue-500/20 to-blue-600/5" delay={80} />
+            <StatCard icon={Coins} label="Total Cost" value={formatCost(data.summary.totalCost)}
+              iconColor="text-emerald-400" iconGradient="from-emerald-500/20 to-emerald-600/5" delay={160} />
+            <StatCard icon={Cpu} label="Models Used" value={data.summary.modelCount.toString()}
+              iconColor="text-amber-400" iconGradient="from-amber-500/20 to-amber-600/5" delay={240} />
           </div>
 
           {/* Daily Activity Chart */}
           {dailyChartData.length > 1 && (
-            <div className="glass-card rounded-2xl p-6 border border-gray-200/80 dark:border-white/[0.06] mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xs font-medium uppercase tracking-widest text-gray-600 dark:text-white/30 flex items-center gap-2">
-                  <TrendingUp className="w-3.5 h-3.5" /> Daily Activity
-                </h2>
-              </div>
+            <div className="glass-card rounded-2xl p-6 mb-8">
+              <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
+                <TrendingUp className="w-3.5 h-3.5" /> Daily Activity
+              </h2>
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={dailyChartData}>
                     <defs>
-                      <linearGradient id="tokenGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
-                      </linearGradient>
                       <linearGradient id="reqGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
@@ -149,9 +187,7 @@ export default function UsagePage() {
                     </defs>
                     <XAxis dataKey="date" tick={{ fill: "#888", fontSize: 10 }} tickLine={false} axisLine={false} />
                     <YAxis tick={{ fill: "#888", fontSize: 10 }} tickLine={false} axisLine={false} width={40} />
-                    <Tooltip
-                      contentStyle={{ background: "rgba(15,15,20,0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12, backdropFilter: "blur(12px)" }}
-                      labelStyle={{ color: "#999" }}
+                    <Tooltip {...chartTooltipStyle}
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       formatter={(value: any) => [Number(value).toLocaleString(), "Requests"]}
                     />
@@ -164,9 +200,8 @@ export default function UsagePage() {
 
           {/* Model Breakdown + Pie */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            {/* Requests by Model Bar Chart */}
-            <div className="lg:col-span-2 glass-card rounded-2xl p-6 border border-gray-200/80 dark:border-white/[0.06]">
-              <h2 className="text-xs font-medium uppercase tracking-widest text-gray-600 dark:text-white/30 mb-6 flex items-center gap-2">
+            <div className="lg:col-span-2 glass-card rounded-2xl p-6">
+              <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
                 <BarChart3 className="w-3.5 h-3.5" /> Requests by Model
               </h2>
               <div className="h-64">
@@ -178,9 +213,7 @@ export default function UsagePage() {
                   }))}>
                     <XAxis dataKey="model" tick={{ fill: "#888", fontSize: 10 }} tickLine={false} axisLine={false} angle={-20} textAnchor="end" height={60} />
                     <YAxis tick={{ fill: "#888", fontSize: 10 }} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{ background: "rgba(15,15,20,0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }}
-                    />
+                    <Tooltip {...chartTooltipStyle} />
                     <Bar dataKey="requests" radius={[6, 6, 0, 0]}>
                       {data.models.map((m, i) => (
                         <Cell key={i} fill={PROVIDER_COLORS[m.provider] || CHART_COLORS[i % CHART_COLORS.length]} />
@@ -191,32 +224,27 @@ export default function UsagePage() {
               </div>
             </div>
 
-            {/* Token Distribution Pie */}
-            <div className="glass-card rounded-2xl p-6 border border-gray-200/80 dark:border-white/[0.06]">
-              <h2 className="text-xs font-medium uppercase tracking-widest text-gray-600 dark:text-white/30 mb-6 flex items-center gap-2">
+            <div className="glass-card rounded-2xl p-6">
+              <h2 className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
                 <Zap className="w-3.5 h-3.5" /> Token Share
               </h2>
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="value"
-                      labelLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{ background: "rgba(15,15,20,0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }}
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="value" labelLine={false} />
+                    <Tooltip {...chartTooltipStyle}
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       formatter={(value: any) => formatTokens(Number(value))}
                     />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              {/* Legend */}
               <div className="space-y-1.5 mt-2">
                 {data.models.slice(0, 5).map((m, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: PROVIDER_COLORS[m.provider] || CHART_COLORS[i % CHART_COLORS.length] }} />
-                    <span className="text-gray-600 dark:text-white/50 truncate flex-1">{m.model}</span>
-                    <span className="text-gray-500 dark:text-white/30 font-mono">{formatTokens(m.totalTokens)}</span>
+                    <span className="text-muted-foreground truncate flex-1">{m.model}</span>
+                    <span className="text-muted-foreground/60 font-mono">{formatTokens(m.totalTokens)}</span>
                   </div>
                 ))}
               </div>
@@ -224,70 +252,26 @@ export default function UsagePage() {
           </div>
 
           {/* Model Details Table */}
-          <div className="glass-card rounded-2xl border border-gray-200/80 dark:border-white/[0.06] overflow-hidden">
-            <div className="p-5 border-b border-gray-200/80 dark:border-white/[0.06]">
-              <h2 className="text-xs font-medium uppercase tracking-widest text-gray-600 dark:text-white/30 flex items-center gap-2">
-                <Cpu className="w-3.5 h-3.5" /> Model Breakdown
-              </h2>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200/80 dark:border-white/[0.06]">
-                    <th className="text-left p-4 text-[10px] uppercase tracking-widest text-gray-600 dark:text-white/25 font-medium">Provider</th>
-                    <th className="text-left p-4 text-[10px] uppercase tracking-widest text-gray-600 dark:text-white/25 font-medium">Model</th>
-                    <th className="text-right p-4 text-[10px] uppercase tracking-widest text-gray-600 dark:text-white/25 font-medium">Requests</th>
-                    <th className="text-right p-4 text-[10px] uppercase tracking-widest text-gray-600 dark:text-white/25 font-medium">Input</th>
-                    <th className="text-right p-4 text-[10px] uppercase tracking-widest text-gray-600 dark:text-white/25 font-medium">Output</th>
-                    <th className="text-right p-4 text-[10px] uppercase tracking-widest text-gray-600 dark:text-white/25 font-medium">Cache R/W</th>
-                    <th className="text-right p-4 text-[10px] uppercase tracking-widest text-gray-600 dark:text-white/25 font-medium">Total</th>
-                    <th className="text-right p-4 text-[10px] uppercase tracking-widest text-gray-600 dark:text-white/25 font-medium">Cost</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.models.map((m, i) => {
-                    const color = PROVIDER_COLORS[m.provider] || CHART_COLORS[i % CHART_COLORS.length];
-                    return (
-                      <tr key={i} className="border-b border-gray-100 dark:border-white/[0.03] hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-                            <span className="text-xs text-gray-600 dark:text-white/50 capitalize">{m.provider}</span>
-                          </div>
-                        </td>
-                        <td className="p-4 font-mono text-xs font-medium">{m.model}</td>
-                        <td className="p-4 text-right font-mono">{m.requests.toLocaleString()}</td>
-                        <td className="p-4 text-right text-gray-600 dark:text-white/40 font-mono">{formatTokens(m.inputTokens)}</td>
-                        <td className="p-4 text-right text-gray-600 dark:text-white/40 font-mono">{formatTokens(m.outputTokens)}</td>
-                        <td className="p-4 text-right text-gray-500 dark:text-white/30 font-mono text-xs">
-                          {formatTokens(m.cacheReadTokens)} / {formatTokens(m.cacheWriteTokens)}
-                        </td>
-                        <td className="p-4 text-right font-mono font-medium">{formatTokens(m.totalTokens)}</td>
-                        <td className="p-4 text-right font-mono font-medium">
-                          <span className={m.totalCost > 0 ? "text-emerald-500" : "text-gray-500 dark:text-white/30"}>
-                            {formatCost(m.totalCost)}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t-2 border-gray-200 dark:border-white/[0.08] font-medium">
-                    <td colSpan={2} className="p-4 text-xs text-gray-600 dark:text-white/50 uppercase tracking-wider">Total</td>
-                    <td className="p-4 text-right font-mono">{data.summary.totalRequests.toLocaleString()}</td>
-                    <td className="p-4 text-right font-mono text-gray-600 dark:text-white/40">{formatTokens(data.models.reduce((s, m) => s + m.inputTokens, 0))}</td>
-                    <td className="p-4 text-right font-mono text-gray-600 dark:text-white/40">{formatTokens(data.models.reduce((s, m) => s + m.outputTokens, 0))}</td>
-                    <td className="p-4 text-right font-mono text-gray-500 dark:text-white/30 text-xs">
-                      {formatTokens(data.models.reduce((s, m) => s + m.cacheReadTokens, 0))} / {formatTokens(data.models.reduce((s, m) => s + m.cacheWriteTokens, 0))}
-                    </td>
-                    <td className="p-4 text-right font-mono">{formatTokens(data.summary.totalTokens)}</td>
-                    <td className="p-4 text-right font-mono text-emerald-500">{formatCost(data.summary.totalCost)}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
+          <DataTable
+            icon={Cpu}
+            title="Model Breakdown"
+            columns={modelColumns}
+            data={data.models}
+            keyFn={(_, i) => i}
+            footer={
+              <tr className="border-t-2 border-border font-medium">
+                <td colSpan={2} className="p-4 text-xs text-muted-foreground uppercase tracking-wider">Total</td>
+                <td className="p-4 text-right font-mono">{data.summary.totalRequests.toLocaleString()}</td>
+                <td className="p-4 text-right font-mono text-muted-foreground">{formatTokens(data.models.reduce((s, m) => s + m.inputTokens, 0))}</td>
+                <td className="p-4 text-right font-mono text-muted-foreground">{formatTokens(data.models.reduce((s, m) => s + m.outputTokens, 0))}</td>
+                <td className="p-4 text-right font-mono text-muted-foreground/60 text-xs">
+                  {formatTokens(data.models.reduce((s, m) => s + m.cacheReadTokens, 0))} / {formatTokens(data.models.reduce((s, m) => s + m.cacheWriteTokens, 0))}
+                </td>
+                <td className="p-4 text-right font-mono">{formatTokens(data.summary.totalTokens)}</td>
+                <td className="p-4 text-right font-mono text-emerald-500">{formatCost(data.summary.totalCost)}</td>
+              </tr>
+            }
+          />
         </>
       )}
     </div>
