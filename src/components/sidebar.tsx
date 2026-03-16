@@ -33,6 +33,7 @@ export function Sidebar() {
   const { collapsed, toggleCollapsed, width, setWidth, effectiveWidth } = useSidebar();
   const [resizing, setResizing] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
+  const [identity, setIdentity] = useState<{ name: string; emoji: string }>({ name: "Navi", emoji: "🤖" });
 
   function handleThemeToggle() {
     setAnimating(true);
@@ -69,6 +70,21 @@ export function Sidebar() {
     setWidth(256);
   }, [setWidth]);
 
+  // Load identity (name + emoji)
+  useEffect(() => {
+    fetch("/api/identity")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.name || data?.emoji) {
+          setIdentity({
+            name: data.name || "Navi",
+            emoji: data.emoji || "🤖",
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Keyboard shortcut: Ctrl+B to toggle
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -104,12 +120,14 @@ export function Sidebar() {
           <div className="flex items-center justify-between">
             <Link href="/brain" className={cn("flex items-center group", collapsed ? "justify-center w-full" : "gap-3")}>
               <div className="relative shrink-0">
-                <img src="/navi-avatar.png" alt="Navi" className="w-7 h-7 rounded-lg object-cover" />
+                <div className="w-7 h-7 rounded-lg bg-gray-200 dark:bg-white/[0.08] flex items-center justify-center text-base">
+                  {identity.emoji}
+                </div>
                 <div className="absolute inset-0 blur-lg bg-violet-500/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
               {!collapsed && (
                 <div>
-                  <span className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">Navi</span>
+                  <span className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">{identity.name}</span>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-glow" />
                     <span className="text-[10px] text-gray-600 dark:text-white/30 uppercase tracking-widest">Online</span>

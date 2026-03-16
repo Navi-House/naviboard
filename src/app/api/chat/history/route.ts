@@ -30,14 +30,59 @@ export async function GET(req: NextRequest) {
   try {
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "50");
 
-    // Find session ID from sessions.json
-    const sessionsData = JSON.parse(readFileSync(SESSIONS_JSON, "utf8"));
-    const session = sessionsData[SESSION_KEY];
-    if (!session?.sessionId) {
+    // Find the transcript file — try sessions.json first, then fall back to
+    // the most recently modified .jsonl file in the sessions directory
+    let transcriptPath = "";
+
+    try {
+      const sessionsData = JSON.parse(readFileSync(SESSIONS_JSON, "utf8"));
+      const session = sessionsData[SESSION_KEY];
+      if (session?.sessionId) {
+        const candidate = join(SESSIONS_DIR, `${session.sessionId}.jsonl`);
+        try {
+          readFileSync(candidate, "utf8"); // Check it exists
+          transcriptPath = candidate;
+        } catch {
+          // File doesn't exist, fall through
+        }
+      }
+      // Also check sessionFile path directly
+      if (!transcriptPath && session?.sessionFile) {
+        try {
+          readFileSync(session.sessionFile, "utf8");
+          transcriptPath = session.sessionFile;
+        } catch {
+          // Fall through
+        }
+      }
+    } catch {
+      // sessions.json doesn't exist or is malformed
+    }
+
+    // Fallback: find the most recent .jsonl in the sessions dir
+    if (!transcriptPath) {
+      const { readdirSync, statSync } = await import("fs");
+      try {
+        const files = readdirSync(SESSIONS_DIR)
+          .filter((f: string) => f.endsWith(".jsonl"))
+          .map((f: string) => ({
+            name: f,
+            path: join(SESSIONS_DIR, f),
+            mtime: statSync(join(SESSIONS_DIR, f)).mtimeMs,
+          }))
+          .sort((a: { mtime: number }, b: { mtime: number }) => b.mtime - a.mtime);
+        if (files.length > 0) {
+          transcriptPath = files[0].path;
+        }
+      } catch {
+        // Directory doesn't exist
+      }
+    }
+
+    if (!transcriptPath) {
       return NextResponse.json([]);
     }
 
-    const transcriptPath = join(SESSIONS_DIR, `${session.sessionId}.jsonl`);
     const lines = readFileSync(transcriptPath, "utf8").trim().split("\n");
 
     const messages: Array<{ role: string; content: string; timestamp?: string }> = [];
