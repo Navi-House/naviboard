@@ -6,6 +6,8 @@ export function middleware(request: NextRequest) {
   // Allow API routes, static assets, and public files (images, icons)
   if (
     pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/identity") ||
+    pathname.startsWith("/api/favicon") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico" ||
     pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp)$/)
