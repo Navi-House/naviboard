@@ -255,7 +255,7 @@ export default function HabitsPage() {
               return (
                 <div key={cat} className="mb-4 sm:mb-6">
                   {categories.length > 1 && (
-                    <div className="text-[10px] text-gray-500 dark:text-white/20 uppercase tracking-wider mb-3 px-1">Heading {cat}</div>
+                    <div className="text-[10px] text-gray-500 dark:text-white/20 uppercase tracking-wider mb-3 px-1">{cat}</div>
                   )}
 
                   {/* Column headers — day labels */}
