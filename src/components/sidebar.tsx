@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Brain, Clock, CheckSquare, Bot, Puzzle, Link2, BarChart3,
-  Heart, BookOpen, Target, GitBranch, MessageCircle, Menu, X, Sun, Moon, ChevronsLeft, ChevronsRight
+  Heart, BookOpen, Target, MessageCircle, Menu, X, Sun, Moon, ChevronsLeft, ChevronsRight
 } from "lucide-react";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ const items = [
   { href: "/chat", label: "Chat", icon: MessageCircle },
   { href: "/brain", label: "Second Brain", icon: Brain },
   { href: "/cron", label: "Cron Jobs", icon: Clock },
-  { href: "/workflows", label: "Workflows", icon: GitBranch },
+  // { href: "/workflows", label: "Workflows", icon: GitBranch },  // Hidden until auto-discovery works
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/skills", label: "Skills", icon: Puzzle },
