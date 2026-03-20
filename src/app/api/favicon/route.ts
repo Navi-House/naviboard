@@ -1,5 +1,7 @@
 import { readFileSync } from "fs";
 
+export const dynamic = "force-dynamic";
+
 const IDENTITY_PATH = "/home/ubuntu/.openclaw/workspace/IDENTITY.md";
 
 function getEmojiFromIdentity(): string {
