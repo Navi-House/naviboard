@@ -1,6 +1,5 @@
-import { readFileSync } from "fs";
-
 export const dynamic = "force-dynamic";
+import { readFileSync } from "fs";
 
 const IDENTITY_PATH = "/home/ubuntu/.openclaw/workspace/IDENTITY.md";
 
@@ -27,7 +26,7 @@ export async function GET() {
   return new Response(svg, {
     headers: {
       "Content-Type": "image/svg+xml",
-      "Cache-Control": "public, max-age=300",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
     },
   });
 }

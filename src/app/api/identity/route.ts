@@ -1,6 +1,5 @@
-import { readFileSync } from "fs";
-
 export const dynamic = "force-dynamic";
+import { readFileSync } from "fs";
 
 const IDENTITY_PATH = "/home/ubuntu/.openclaw/workspace/IDENTITY.md";
 
@@ -20,8 +19,12 @@ function parseIdentity() {
 }
 
 export async function GET() {
+  // Read at request time, not build time
   const data = parseIdentity();
   return new Response(JSON.stringify(data), {
-    headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=60" },
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+    },
   });
 }
