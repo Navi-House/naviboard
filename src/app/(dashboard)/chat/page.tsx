@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, Send, Loader2, Trash2, User } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 
 interface Message {
   role: "user" | "assistant";
@@ -12,10 +13,26 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [naviEmoji, setNaviEmoji] = useState("🤖");
+  const [naviName, setNaviName] = useState("Navi");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load history on mount
+  // Load identity + history on mount
+  useEffect(() => {
+    async function loadIdentity() {
+      try {
+        const res = await fetch("/api/identity");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.emoji) setNaviEmoji(data.emoji);
+          if (data.name) setNaviName(data.name);
+        }
+      } catch { /* ignore */ }
+    }
+    loadIdentity();
+  }, []);
+
   useEffect(() => {
     async function loadHistory() {
       try {
@@ -149,26 +166,25 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
-      {/* Header */}
       <div className="mb-4 shrink-0">
-        <h1 className="text-2xl font-semibold flex items-center gap-3 tracking-tight">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-gray-200/80 dark:border-white/[0.06]">
-            <MessageCircle className="w-5 h-5 text-blue-400" />
-          </div>
-          Chat
-        </h1>
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600 dark:text-white/30 mt-1 ml-12">Talk to Navi</p>
-          {messages.length > 0 && (
-            <button
-              onClick={() => setMessages([])}
-              className="text-xs flex items-center gap-1 px-2 py-1 rounded-md text-gray-500 dark:text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all"
-            >
-              <Trash2 className="w-3 h-3" />
-              Clear
-            </button>
-          )}
-        </div>
+        <PageHeader
+          icon={MessageCircle}
+          iconColor="text-blue-400"
+          iconGradient="from-blue-500/10 to-cyan-500/10"
+          title="Chat"
+          description="Talk to Navi"
+          actions={
+            messages.length > 0 ? (
+              <button
+                onClick={() => setMessages([])}
+                className="text-xs flex items-center gap-1 px-2 py-1 rounded-md text-muted-foreground/40 hover:text-red-400 hover:bg-red-500/10 transition-all"
+              >
+                <Trash2 className="w-3 h-3" />
+                Clear
+              </button>
+            ) : undefined
+          }
+        />
       </div>
 
       {/* Messages */}
@@ -182,7 +198,7 @@ export default function ChatPage() {
 
         {!loadingHistory && messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center opacity-40">
-            <img src="/navi-avatar.png" alt="Navi" className="w-16 h-16 rounded-full mb-4 opacity-50" />
+            <span className="text-5xl mb-4 opacity-50">{naviEmoji}</span>
             <p className="text-sm text-gray-500 dark:text-white/30">Send a message to start chatting</p>
             <p className="text-xs text-gray-400 dark:text-white/15 mt-1">Shift+Enter for new line</p>
           </div>
@@ -192,8 +208,8 @@ export default function ChatPage() {
           <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             {msg.role === "assistant" && (
               <div className="shrink-0 mt-1">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/[0.06] flex items-center justify-center overflow-hidden">
-                  <img src="/navi-avatar.png" alt="Navi" className="w-5 h-5 rounded-full" />
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/[0.06] flex items-center justify-center">
+                  <span className="text-sm">{naviEmoji}</span>
                 </div>
               </div>
             )}
