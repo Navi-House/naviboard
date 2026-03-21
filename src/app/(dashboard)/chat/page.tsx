@@ -14,7 +14,7 @@ export default function ChatPage() {
   const [streaming, setStreaming] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [naviEmoji, setNaviEmoji] = useState("🤖");
-  const [naviName, setNaviName] = useState("Navi");
+  const [, setNaviName] = useState("Navi");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
