@@ -8,7 +8,7 @@ Tell you OpenClaw to fork and customize! You can also test it out for free on a 
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?style=flat-square&logo=tailwindcss)
 ![SQLite](https://img.shields.io/badge/SQLite-local-green?style=flat-square&logo=sqlite)
 
-<img width="348" height="359.2" alt="image" src="https://github.com/user-attachments/assets/6c8ed650-0d98-4dcc-974b-ac8a6cef61ac" />
+<img width="348" height="359.2" alt="image" src="https://github.com/user-attachments/assets/88e5fed8-a34c-499b-815c-2078d851b651" />
 
 https://github.com/user-attachments/assets/512f637e-d4ce-47e0-b72a-2cb5667b7580
 
