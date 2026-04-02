@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useEffect, useState, useCallback } from "react";
 import { Clock, Play, Trash2, ToggleLeft, ToggleRight, Terminal, Cpu } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
@@ -25,7 +26,7 @@ export default function CronPage() {
 
   const loadJobs = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/cron");
+    const res = await apiFetch("/api/cron");
     const data = await res.json();
     setJobs(Array.isArray(data) ? data : []);
     setLoading(false);
@@ -34,7 +35,7 @@ export default function CronPage() {
   useEffect(() => { loadJobs(); }, [loadJobs]);
 
   async function doAction(action: string, id: string) {
-    await fetch("/api/cron", {
+    await apiFetch("/api/cron", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action, id }),

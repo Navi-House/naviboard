@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useEffect, useState, useCallback } from "react";
 import { BarChart3, Coins, Cpu, Zap, Hash, TrendingUp } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, PieChart, Pie } from "recharts";
@@ -65,7 +66,7 @@ export default function UsagePage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(`/api/usage?range=${range}`);
+    const res = await apiFetch(`/api/usage?range=${range}`);
     setData(await res.json());
     setLoading(false);
   }, [range]);

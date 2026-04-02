@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useEffect, useState, useCallback } from "react";
 import {
   Target, Plus, X, Trash2, Archive, ChevronLeft, ChevronRight,
@@ -82,7 +83,7 @@ export default function HabitsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/habits?range=90");
+    const res = await apiFetch("/api/habits?range=90");
     const data = await res.json();
     setHabits(data.habits || []);
     setLogs(data.logs || []);
@@ -93,7 +94,7 @@ export default function HabitsPage() {
 
   async function toggleLog(habitId: number, date: string) {
     const existing = logs.find(l => l.habit_id === habitId && l.date === date);
-    await fetch("/api/habits", {
+    await apiFetch("/api/habits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "log", habit_id: habitId, date, value: existing ? 0 : 1 }),
@@ -103,7 +104,7 @@ export default function HabitsPage() {
 
   async function addHabit() {
     if (!formName.trim()) return;
-    await fetch("/api/habits", {
+    await apiFetch("/api/habits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: formName, icon: formIcon, color: formColor, category: formCategory, target: formTarget, unit: formUnit }),
@@ -114,7 +115,7 @@ export default function HabitsPage() {
 
   async function updateHabit() {
     if (!editHabit) return;
-    await fetch("/api/habits", {
+    await apiFetch("/api/habits", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: editHabit.id, name: formName, icon: formIcon, color: formColor, category: formCategory }),
@@ -125,7 +126,7 @@ export default function HabitsPage() {
   }
 
   async function archiveHabit(id: number) {
-    await fetch("/api/habits", {
+    await apiFetch("/api/habits", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, archived: 1 }),
@@ -135,7 +136,7 @@ export default function HabitsPage() {
 
   async function deleteHabit(id: number) {
     if (!confirm("Delete this habit and all its history?")) return;
-    await fetch("/api/habits", {
+    await apiFetch("/api/habits", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
@@ -234,7 +235,7 @@ export default function HabitsPage() {
               return (
                 <div key={cat} className="mb-4 sm:mb-6">
                   {categories.length > 1 && (
-                    <div className="text-[10px] text-gray-500 dark:text-white/20 uppercase tracking-wider mb-3 px-1">Heading {cat}</div>
+                    <div className="text-[10px] text-gray-500 dark:text-white/20 uppercase tracking-wider mb-3 px-1">{cat}</div>
                   )}
 
                   {/* Column headers — day labels */}

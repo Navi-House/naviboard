@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useEffect, useState, useCallback } from "react";
 import { Bot } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
@@ -12,7 +13,7 @@ export default function AgentsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/agents");
+    const res = await apiFetch("/api/agents");
     const data = await res.json();
     setAgents(Array.isArray(data) ? data : []);
     setLoading(false);

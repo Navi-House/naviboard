@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useEffect, useState, useCallback } from "react";
 import {
   Heart, Plus, X, Utensils, Dumbbell, Moon, Timer, Droplets,
@@ -54,8 +55,8 @@ export default function HealthPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const [dayRes, histRes] = await Promise.all([
-      fetch(`/api/health?date=${selectedDate}`),
-      fetch(`/api/health?range=30`),
+      apiFetch(`/api/health?date=${selectedDate}`),
+      apiFetch(`/api/health?range=30`),
     ]);
     const dayData = await dayRes.json();
     const histData = await histRes.json();
@@ -77,7 +78,7 @@ export default function HealthPage() {
 
   async function addEntry() {
     if (!formTitle.trim()) return;
-    await fetch("/api/health", {
+    await apiFetch("/api/health", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -91,7 +92,7 @@ export default function HealthPage() {
   }
 
   async function deleteEntry(id: number) {
-    await fetch("/api/health", {
+    await apiFetch("/api/health", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
@@ -100,7 +101,7 @@ export default function HealthPage() {
   }
 
   async function updateMetric(field: string, value: string | number) {
-    await fetch("/api/health", {
+    await apiFetch("/api/health", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "metrics", data: { date: selectedDate, [field]: value } }),

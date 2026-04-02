@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useEffect, useState, useCallback } from "react";
 import { Puzzle, Search, ExternalLink, AlertTriangle } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
@@ -23,7 +24,7 @@ export default function SkillsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/skills");
+    const res = await apiFetch("/api/skills");
     const data = await res.json();
     setSkills(data.skills || []);
     setLoading(false);
@@ -33,7 +34,7 @@ export default function SkillsPage() {
 
   async function search() {
     if (!searchQuery.trim()) return;
-    const res = await fetch(`/api/skills?search=${encodeURIComponent(searchQuery)}`);
+    const res = await apiFetch(`/api/skills?search=${encodeURIComponent(searchQuery)}`);
     const data = await res.json();
     setSearchResults(data.results || "No results");
   }

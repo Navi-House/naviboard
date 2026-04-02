@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useEffect, useState, useCallback } from "react";
 import { Link2, Mail, Book, Building, Github, Cpu, Linkedin, Check } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
@@ -31,7 +32,7 @@ export default function IntegrationsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/integrations");
+    const res = await apiFetch("/api/integrations");
     setIntegrations(await res.json());
     setLoading(false);
   }, []);

@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useEffect, useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Plus, X, CheckSquare, Sparkles, Rocket, Filter } from "lucide-react";
@@ -58,7 +59,7 @@ export default function TasksPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   const load = useCallback(async () => {
-    const res = await fetch("/api/tasks");
+    const res = await apiFetch("/api/tasks");
     setTasks(await res.json());
   }, []);
 
@@ -68,7 +69,7 @@ export default function TasksPage() {
   useEffect(() => {
     if (pollingId !== null) {
       const pollInterval = setInterval(async () => {
-        const res = await fetch("/api/tasks");
+        const res = await apiFetch("/api/tasks");
         const updatedTasks = await res.json();
         setTasks(updatedTasks);
 
@@ -105,7 +106,7 @@ export default function TasksPage() {
 
   async function addTask(status: string) {
     if (!newName.trim()) return;
-    await fetch("/api/tasks", {
+    await apiFetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: newName, status }),
@@ -116,7 +117,7 @@ export default function TasksPage() {
   }
 
   async function updateTask(task: Partial<Task> & { id: number }) {
-    await fetch("/api/tasks", {
+    await apiFetch("/api/tasks", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(task),
@@ -127,7 +128,7 @@ export default function TasksPage() {
   async function enrichTask(task: Task) {
     setLoadingEnrich(prev => ({ ...prev, [task.id]: true }));
     try {
-      const res = await fetch("/api/tasks/enrich", {
+      const res = await apiFetch("/api/tasks/enrich", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -157,7 +158,7 @@ export default function TasksPage() {
   async function executeTask(task: Task) {
     setLoadingExecute(prev => ({ ...prev, [task.id]: true }));
     try {
-      await fetch("/api/tasks/execute", {
+      await apiFetch("/api/tasks/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -181,7 +182,7 @@ export default function TasksPage() {
   }
 
   async function deleteTask(id: number) {
-    await fetch("/api/tasks", {
+    await apiFetch("/api/tasks", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),

@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useEffect, useRef, useState } from "react";
 import { GitBranch, Zap, ChevronDown } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
@@ -254,7 +255,7 @@ export default function WorkflowsPage() {
     async function loadWorkflows() {
       try {
         setLoading(true);
-        const res = await fetch("/api/workflows", { cache: "no-store" });
+        const res = await apiFetch("/api/workflows", { cache: "no-store" });
         if (!res.ok) throw new Error(`Failed to load workflows (${res.status})`);
         const data = (await res.json()) as Workflow[];
         if (!mounted) return;

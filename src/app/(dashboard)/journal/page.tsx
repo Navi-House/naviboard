@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useEffect, useState, useCallback, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -75,7 +76,7 @@ export default function JournalPage() {
   const isToday = selectedDate === formatDate(new Date());
 
   const loadEntry = useCallback(async (date: string) => {
-    const res = await fetch(`/api/journal?date=${date}`);
+    const res = await apiFetch(`/api/journal?date=${date}`);
     const data = await res.json();
     if (data.entry) {
       setEntry(data.entry);
@@ -94,7 +95,7 @@ export default function JournalPage() {
   }, []);
 
   const loadHistory = useCallback(async () => {
-    const res = await fetch("/api/journal?range=90");
+    const res = await apiFetch("/api/journal?range=90");
     const data = await res.json();
     setHistory(data.entries || []);
   }, []);
@@ -107,7 +108,7 @@ export default function JournalPage() {
 
   async function save() {
     setSaving(true);
-    await fetch("/api/journal", {
+    await apiFetch("/api/journal", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ date: selectedDate, content, mood, tags }),
@@ -149,7 +150,7 @@ export default function JournalPage() {
   async function doSearch() {
     if (!searchQuery.trim()) { setSearchResults([]); return; }
     setSearching(true);
-    const res = await fetch(`/api/journal?search=${encodeURIComponent(searchQuery)}`);
+    const res = await apiFetch(`/api/journal?search=${encodeURIComponent(searchQuery)}`);
     const data = await res.json();
     setSearchResults(data.entries || []);
     setSearching(false);

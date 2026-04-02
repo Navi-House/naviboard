@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+function redirectTo(request: NextRequest, path: string) {
+  return NextResponse.redirect(new URL(`${basePath}${path}`, request.url));
+}
+
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
@@ -19,10 +25,7 @@ export function middleware(request: NextRequest) {
   // Check for token in query param (auto-login via link)
   const tokenParam = searchParams.get("token");
   if (tokenParam === secret) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/chat";
-    url.searchParams.delete("token");
-    const response = NextResponse.redirect(url);
+    const response = redirectTo(request, "/chat");
     response.cookies.set("navi_auth", secret, {
       httpOnly: true,
       secure: false,
@@ -40,7 +43,7 @@ export function middleware(request: NextRequest) {
   // Authenticated: redirect root to /chat, allow everything else
   if (isAuthed) {
     if (pathname === "/") {
-      return NextResponse.redirect(new URL("/chat", request.url));
+      return redirectTo(request, "/chat");
     }
     return NextResponse.next();
   }
@@ -50,9 +53,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  return NextResponse.redirect(new URL("/login", request.url));
+  return redirectTo(request, "/login");
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/", "/((?!_next/static|_next/image|favicon.ico).*)"],
 };

@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -16,11 +17,11 @@ export default function BrainPage() {
   const [readonly, setReadonly] = useState(false);
 
   useEffect(() => {
-    fetch("/api/brain/files").then(r => r.json()).then(setFiles);
+    apiFetch("/api/brain/files").then(r => r.json()).then(setFiles);
   }, []);
 
   async function loadFile(path: string) {
-    const res = await fetch(`/api/brain/file?path=${encodeURIComponent(path)}`);
+    const res = await apiFetch(`/api/brain/file?path=${encodeURIComponent(path)}`);
     const data = await res.json();
     setContent(data.content);
     setSelected(path);
@@ -32,7 +33,7 @@ export default function BrainPage() {
   async function saveFile() {
     if (!selected) return;
     setSaving(true);
-    await fetch("/api/brain/file", {
+    await apiFetch("/api/brain/file", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path: selected, content }),
@@ -48,7 +49,7 @@ export default function BrainPage() {
   async function doSearch() {
     if (!searchQuery.trim()) { setSearchResults([]); return; }
     setSearching(true);
-    const res = await fetch(`/api/brain/search?q=${encodeURIComponent(searchQuery)}`);
+    const res = await apiFetch(`/api/brain/search?q=${encodeURIComponent(searchQuery)}`);
     const data = await res.json();
     setSearchResults(data.results || []);
     setSearching(false);

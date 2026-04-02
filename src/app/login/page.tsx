@@ -1,7 +1,10 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 function LoginForm() {
   const [token, setToken] = useState("");
@@ -15,7 +18,7 @@ function LoginForm() {
     if (t) {
       setToken(t);
       setLoading(true);
-      fetch("/api/auth/login", {
+      apiFetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: t }),
@@ -34,7 +37,7 @@ function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const res = await fetch("/api/auth/login", {
+    const res = await apiFetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
@@ -52,7 +55,7 @@ function LoginForm() {
       {loading && searchParams.get("token") && (
         <div className="absolute inset-0 flex items-center justify-center z-50">
           <div className="text-center animate-fade-in-up">
-            <img src="/navi-avatar.png" alt="Navi" className="w-20 h-20 rounded-2xl animate-pulse-glow inline-block mb-4" />
+            <img src={`${basePath}/navi-avatar.png`} alt="Navi" className="w-20 h-20 rounded-2xl animate-pulse-glow inline-block mb-4" />
             <p className="text-base text-gray-600 dark:text-white/40">Authenticating...</p>
           </div>
         </div>
@@ -72,7 +75,7 @@ function LoginForm() {
         {/* Fairy glow */}
         <div className="text-center">
           <div className="inline-block relative">
-            <img src="/navi-avatar.png" alt="Navi" className="w-20 h-20 rounded-2xl animate-pulse-glow inline-block" />
+            <img src={`${basePath}/navi-avatar.png`} alt="Navi" className="w-20 h-20 rounded-2xl animate-pulse-glow inline-block" />
             <div className="absolute inset-0 blur-2xl bg-violet-500/20 rounded-full animate-breathe" />
           </div>
           <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white mt-5 tracking-tight">Navi Dashboard</h1>
@@ -116,7 +119,7 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <img src="/navi-avatar.png" alt="Navi" className="w-20 h-20 rounded-2xl animate-pulse-glow" />
+        <img src={`${basePath}/navi-avatar.png`} alt="Navi" className="w-20 h-20 rounded-2xl animate-pulse-glow" />
       </div>
     }>
       <LoginForm />

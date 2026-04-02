@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, Send, Loader2, Trash2, User } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
@@ -13,14 +14,30 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [naviEmoji, setNaviEmoji] = useState("🤖");
+  const [, setNaviName] = useState("Navi");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load history on mount
+  // Load identity + history on mount
+  useEffect(() => {
+    async function loadIdentity() {
+      try {
+        const res = await apiFetch("/api/identity");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.emoji) setNaviEmoji(data.emoji);
+          if (data.name) setNaviName(data.name);
+        }
+      } catch { /* ignore */ }
+    }
+    loadIdentity();
+  }, []);
+
   useEffect(() => {
     async function loadHistory() {
       try {
-        const res = await fetch("/api/chat/history?limit=100");
+        const res = await apiFetch("/api/chat/history?limit=100");
         if (res.ok) {
           const history = await res.json();
           if (history.length > 0) setMessages(history);
@@ -64,7 +81,7 @@ export default function ChatPage() {
     setMessages([...newMessages, { role: "assistant", content: "" }]);
 
     try {
-      const res = await fetch("/api/chat", {
+      const res = await apiFetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: newMessages }),
@@ -182,7 +199,7 @@ export default function ChatPage() {
 
         {!loadingHistory && messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center opacity-40">
-            <img src="/navi-avatar.png" alt="Navi" className="w-16 h-16 rounded-full mb-4 opacity-50" />
+            <span className="text-5xl mb-4 opacity-50">{naviEmoji}</span>
             <p className="text-sm text-gray-500 dark:text-white/30">Send a message to start chatting</p>
             <p className="text-xs text-gray-400 dark:text-white/15 mt-1">Shift+Enter for new line</p>
           </div>
@@ -192,8 +209,8 @@ export default function ChatPage() {
           <div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             {msg.role === "assistant" && (
               <div className="shrink-0 mt-1">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/[0.06] flex items-center justify-center overflow-hidden">
-                  <img src="/navi-avatar.png" alt="Navi" className="w-5 h-5 rounded-full" />
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/[0.06] flex items-center justify-center">
+                  <span className="text-sm">{naviEmoji}</span>
                 </div>
               </div>
             )}
